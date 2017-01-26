@@ -1,44 +1,44 @@
 <?xml version="1.0"?>
 <vito>
   <devices>
-    <device ID="20C8" name="VPlusHO1" protocol="KW2"/>
+	<device ID="20C8" name="VPlusHO1" protocol="KW2"/>
   </devices>
   <commands>
     <command name='getTempSolarDach' protocmd='getaddr' >
       <addr>6564</addr>
       <len>2</len>
       <unit>TD</unit>
-      <description>Gets the solar collector temperature in C.</description>
+      <description>Temperatur in Solar Kollektor in C.</description>
     </command>
     <command name='getTempSolarWW' protocmd='getaddr' >
       <addr>6566</addr>
       <len>2</len>
       <unit>TD</unit>
-      <description>Gets the solar collector temperature in C.</description>
+      <description>Temperatur Warmwasser in Solar Kollektor in C</description>
     </command>
     <command name='getTempWW' protocmd='getaddr' >
       <addr>0812</addr>
       <len>2</len>
       <unit>TD</unit>
-      <description></description>
+      <description>Temperatur Warmwasser in C</description>
     </command>
     <command name='getTempAussen' protocmd='getaddr' >
       <addr>5525</addr>
       <len>2</len>
       <unit>TD</unit>
-      <description></description>
+      <description>Temperatur Umgebung in C</description>
     </command>
     <command name='getTempKessel' protocmd='getaddr' >
       <addr>0810</addr>
       <len>2</len>
       <unit>TD</unit>
-      <description></description>
+      <description>Temperatur Kessel in C</description>
     </command>
     <command name='getStatusSolar' protocmd='getaddr' >
       <addr>6552</addr>
       <len>1</len>
       <unit>E_ST</unit>
-      <description></description>
+      <description>Status Solar Kollektor</description>
     </command>
     <command name='getStatusPumpe?' protocmd='getaddr' >
       <addr>0845</addr>
@@ -56,25 +56,25 @@
       <addr>3906</addr>
       <len>1</len>
       <unit>E_ST</unit>
-      <description></description>
+      <description>Status Kessel</description>
     </command>
     <command name='getStatusZirkulation' protocmd='getaddr' >
       <addr>6515</addr>
       <len>1</len>
       <unit></unit>
-      <description></description>
+      <description>Status Zirkulationspumpe</description>
     </command>
     <command name='getStatusSpeicherlade' protocmd='getaddr' >
       <addr>6513</addr>
       <len>1</len>
       <unit></unit>
-      <description></description>
+      <description>Status Speicherladepumpe</description>
     </command>
     <command name='getStatusIntern' protocmd='getaddr' >
       <addr>0AA1</addr>
       <len>1</len>
       <unit></unit>
-      <description></description>
+      <description>Status Interner Ausgang</description>
     </command>
     <command name='getStatusMischer?' protocmd='getaddr' >
       <addr>254C</addr>
@@ -98,9 +98,9 @@
       <addr>088E</addr>
       <len>8</len>
       <unit>TI</unit>
-      <description></description>
+      <description>Zeiteinstellung</description>
     </command>
-<!--    <command name='getStundenBrenner' protocmd='getaddr' >
+    <command name='getStundenBrenner' protocmd='getaddr' >
       <addr>0886</addr>
       <len>4</len>
       <unit>HS</unit>
@@ -134,13 +134,13 @@
     <command name='getDrehzahlSollHKP_M2' protocmd='getaddr' >
       <addr>0A3B</addr>
       <len>1</len>
-      <unit>PC</unit>
+      <unit>PR</unit>
       <description></description>
     </command>
     <command name='getDrehzahlSollPInt' protocmd='getaddr' >
       <addr>0A3C</addr>
       <len>1</len>
-      <unit>PC</unit>
+      <unit>PR</unit>
       <description></description>
     </command>
     <command name='getSammelStoerung' protocmd='getaddr' >
@@ -152,7 +152,6 @@
     <command name='getFrostWarnungA1M1' protocmd='getaddr' >
       <addr>2500</addr>
       <len>1</len>
-      <unit>B_FW</unit>
       <description>Ermittle den Status der Frostwarnung des Heizkreises A1M1</description>
     </command>
     <command name='getRaumTempSollA1M1' protocmd='getaddr' >
@@ -164,10 +163,8 @@
     <command name='getFerienBetriebA1M1' protocmd='getaddr' >
       <addr>2535</addr>
       <len>1</len>
-      <unit>B_FB</unit>
       <description></description>
     </command>
-
     <command name='getTempAGedaempft' protocmd='getaddr' >
       <addr>5527</addr>
       <len>2</len>
@@ -183,17 +180,13 @@
     <command name='getStatusFlamme' protocmd='getaddr' >
       <addr>55D3</addr>
       <len>1</len>
-      <unit>B_STF</unit>
       <description></description>
     </command>
     <command name='getVerriegelung' protocmd='getaddr' >
       <addr>55D3</addr>
       <len>1</len>
-      <unit>B_STV</unit>
       <description></description>
     </command>
-
-
     <command name='getOelverbrauch' protocmd='getaddr' >
       <addr>7574</addr>
       <len>4</len>
@@ -202,10 +195,9 @@
     <command name='getDrehzahlPIntern' protocmd='getaddr' >
       <addr>7660</addr>
       <len>1</len>
-      <unit>PC</unit>
+      <unit>PR</unit>
       <description></description>
     </command>
- -->
     <command name='getStatusHKP1?' protocmd='getaddr' >
       <addr>7663</addr>
       <len>1</len>
