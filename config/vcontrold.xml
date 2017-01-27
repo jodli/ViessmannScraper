@@ -50,7 +50,7 @@
         </unit>
 	<unit name='Counter'>
 	   <abbrev>CO</abbrev>
-	   <calc get='V' set='V'/>
+	   <calc get='V' />
 	   <type>int</type>
 	   <entity></entity>
 	</unit>
@@ -84,14 +84,24 @@
 	   <enum text='NOT OK'/>
 	</unit>
 	<unit name='BetriebsArt'>
-	   <abbrev>BA</abbrev>
+	   <abbrev>E_BA2</abbrev>
 	   <type>enum</type>
-	   <enum bytes='00' text='WW'/>
-	   <enum bytes='01' text='RED'/>
-	   <enum bytes='02' text='NORM'/>
-	   <enum bytes='04' text='H+WW'/>
-	   <enum bytes='03' text='H+WW'/>
-	   <enum bytes='05' text='ABSCHALT'/>
+	   <enum bytes='00' text='Nur WW'/>
+	   <enum bytes='01' text='Dauernd Reduziert'/>
+	   <enum bytes='02' text='Dauernd Normal'/>
+	   <enum bytes='03' text='Heizen und WW'/>
+	   <enum bytes='04' text='Heizen und WW'/>
+	   <enum bytes='05' text='Abschalt'/>
+	   <enum text='UNKNOWN'/>
+	</unit>	   
+	<unit name='BetriebsArt'>
+	   <abbrev>E_BA4</abbrev>
+	   <type>enum</type>
+	   <enum bytes='00' text='Abschalt'/>
+	   <enum bytes='01' text='Nur WW'/>
+	   <enum bytes='02' text='Heizen und WW'/>
+	   <enum bytes='04' text='Dauernd Reduziert'/>
+	   <enum bytes='03' text='Dauernd Normal'/>
 	   <enum text='UNKNOWN'/>
 	</unit>	   
 	 <unit name='SetReturnStatus'>

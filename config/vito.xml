@@ -4,11 +4,23 @@
 	<device ID="20C8" name="VPlusHO1" protocol="KW2"/>
   </devices>
   <commands>
+    <command name="getTemp17A" protocmd="getaddr">
+      <addr>080A</addr>
+      <len>2</len>
+      <unit>TD</unit>
+      <description>Temperatur 17A in C</description>
+    </command>
+    <command name="getTempAbgas" protocmd="getaddr">
+      <addr>0808</addr>
+      <len>2</len>
+      <unit>TD</unit>
+      <description>Temperatur der Abgase in C</description>
+    </command>
     <command name='getTempSolarDach' protocmd='getaddr' >
       <addr>6564</addr>
       <len>2</len>
       <unit>TD</unit>
-      <description>Temperatur in Solar Kollektor in C.</description>
+      <description>Temperatur in Solar Kollektor in C</description>
     </command>
     <command name='getTempSolarWW' protocmd='getaddr' >
       <addr>6566</addr>
@@ -16,37 +28,50 @@
       <unit>TD</unit>
       <description>Temperatur Warmwasser in Solar Kollektor in C</description>
     </command>
-    <command name='getTempWW' protocmd='getaddr' >
+    <command name='getTempIstWW' protocmd='getaddr' >
       <addr>0812</addr>
       <len>2</len>
       <unit>TD</unit>
-      <description>Temperatur Warmwasser in C</description>
+      <description>Temperatur Warmwasser Ist in C</description>
+    </command>
+    <command name='getTempSollWW' protocmd='getaddr' >
+      <addr>0814</addr>
+      <len>2</len>
+      <unit>TD</unit>
+      <description>Temperatur Warmwasser Soll in C</description>
     </command>
     <command name='getTempAussen' protocmd='getaddr' >
       <addr>5525</addr>
       <len>2</len>
       <unit>TD</unit>
-      <description>Temperatur Umgebung in C</description>
+      <description>Temperatur Aussen in C</description>
     </command>
-    <command name='getTempKessel' protocmd='getaddr' >
+    <command name='getTempAussenGedaempft' protocmd='getaddr' >
+      <addr>5527</addr>
+      <len>2</len>
+      <unit>TD</unit>
+      <description>Temperatur Aussen gedaempft in C</description>
+    </command>
+    <command name='getTempIstKessel' protocmd='getaddr' >
       <addr>0810</addr>
       <len>2</len>
       <unit>TD</unit>
-      <description>Temperatur Kessel in C</description>
+      <description>Temperatur Ist Kessel in C</description>
     </command>
+    <command name='getTempSollKessel' protocmd='getaddr' >
+      <addr>555A</addr>
+      <len>2</len>
+      <unit>TD</unit>
+      <description>Temperatur Soll Kessel in C</description>
+    </command>
+    
     <command name='getStatusSolar' protocmd='getaddr' >
       <addr>6552</addr>
       <len>1</len>
       <unit>E_ST</unit>
       <description>Status Solar Kollektor</description>
     </command>
-    <command name='getStatusPumpe?' protocmd='getaddr' >
-      <addr>0845</addr>
-      <len>1</len>
-      <unit></unit>
-      <description></description>
-    </command>
-    <command name='getStatusBoiler?' protocmd='getaddr' >
+    <command name='getStatusRelaisK12' protocmd='getaddr' >
       <addr>0842</addr>
       <len>1</len>
       <unit></unit>
@@ -61,20 +86,38 @@
     <command name='getStatusZirkulation' protocmd='getaddr' >
       <addr>6515</addr>
       <len>1</len>
-      <unit></unit>
+      <unit>E_ST</unit>
       <description>Status Zirkulationspumpe</description>
     </command>
     <command name='getStatusSpeicherlade' protocmd='getaddr' >
+      <addr>0845</addr>
+      <len>1</len>
+      <unit>E_ST</unit>
+      <description>Status Speicherladepumpe</description>
+    </command>
+    <command name='getStatusSpeicherlade?' protocmd='getaddr' >
       <addr>6513</addr>
       <len>1</len>
-      <unit></unit>
+      <unit>E_ST</unit>
       <description>Status Speicherladepumpe</description>
     </command>
     <command name='getStatusIntern' protocmd='getaddr' >
-      <addr>0AA1</addr>
+      <addr>7660</addr>
       <len>1</len>
-      <unit></unit>
-      <description>Status Interner Ausgang</description>
+      <unit>E_ST</unit>
+      <description>Status Digitaler Ausgang - Interne Pumpe</description>
+    </command>
+    <command name='getStatusHKP_A1' protocmd='getaddr' >
+      <addr>7663</addr>
+      <len>1</len>
+      <unit>E_ST</unit>
+      <description>Status Heizkreispumpe A1</description>
+    </command>
+    <command name='getStatusHKP_M2' protocmd='getaddr' >
+      <addr>7665</addr>
+      <len>1</len>
+      <unit>E_ST</unit>
+      <description>Status Heizkreispumpe M2</description>
     </command>
     <command name='getStatusMischer?' protocmd='getaddr' >
       <addr>254C</addr>
@@ -82,16 +125,16 @@
       <unit></unit>
       <description></description>
     </command>
-    <command name='getFlowSwitch?' protocmd='getaddr' >
+    <command name='getFlowSwitch' protocmd='getaddr' >
       <addr>0883</addr>
       <len>1</len>
       <unit></unit>
       <description></description>
     </command>
-    <command name='getVentil?' protocmd='getaddr' >
+    <command name='getStatusUmschaltventil' protocmd='getaddr' >
       <addr>0A10</addr>
       <len>1</len>
-      <unit></unit>
+      <unit>E_STUV2</unit>
       <description></description>
     </command>
     <command name='getTime' protocmd='getaddr' >
@@ -104,31 +147,25 @@
       <addr>0886</addr>
       <len>4</len>
       <unit>HS</unit>
-      <description></description>
+      <description>Betriebsstunden Brenner</description>
     </command>
     <command name='getBrennerstarts' protocmd='getaddr' >
       <addr>088A</addr>
       <len>4</len>
       <unit>CO</unit>
-      <description>Ermittle die Anzahl Brennerstarts</description>
+      <description>Anzahl Brennerstarts</description>
     </command>
     <command name='getBrennerStunden1' protocmd='getaddr' >
       <addr>08A7</addr>
       <len>4</len>
       <unit>HS</unit>
-      <description>Ermittle die Brennerstunden Stufe 1</description>
-    </command>
-    <command name='getBrennerStunden1' protocmd='getaddr' >
-      <addr>08A7</addr>
-      <len>4</len>
-      <unit>HS</unit>
-      <description>Ermittle die Brennerstunden Stufe 1</description>
+      <description>Betriebsstunden Brenner Stufe 1</description>
     </command>
     <command name='getBrennerStunden2' protocmd='getaddr' >
       <addr>08AB</addr>
       <len>4</len>
       <unit>HS</unit>
-      <description>Ermittle die Brennerstunden Stufe 2</description>
+      <description>Betriebsstunden Brenner Stufe 2</description>
     </command>
 
     <command name='getDrehzahlSollHKP_M2' protocmd='getaddr' >
@@ -152,6 +189,7 @@
     <command name='getFrostWarnungA1M1' protocmd='getaddr' >
       <addr>2500</addr>
       <len>1</len>
+      <unit></unit>
       <description>Ermittle den Status der Frostwarnung des Heizkreises A1M1</description>
     </command>
     <command name='getRaumTempSollA1M1' protocmd='getaddr' >
@@ -165,25 +203,13 @@
       <len>1</len>
       <description></description>
     </command>
-    <command name='getTempAGedaempft' protocmd='getaddr' >
-      <addr>5527</addr>
-      <len>2</len>
-      <unit>TD</unit>
-      <description></description>
-    </command>
-    <command name='getTempKSoll' protocmd='getaddr' >
-      <addr>555A</addr>
-      <len>2</len>
-      <unit>TD</unit>
-      <description></description>
-    </command>
     <command name='getStatusFlamme' protocmd='getaddr' >
       <addr>55D3</addr>
       <len>1</len>
       <description></description>
     </command>
-    <command name='getVerriegelung' protocmd='getaddr' >
-      <addr>55D3</addr>
+    <command name='getStatusBrenner' protocmd='getaddr' >
+      <addr>551E</addr>
       <len>1</len>
       <description></description>
     </command>
@@ -193,21 +219,33 @@
       <description></description>
     </command>
     <command name='getDrehzahlPIntern' protocmd='getaddr' >
-      <addr>7660</addr>
+      <addr>7661</addr>
       <len>1</len>
       <unit>PR</unit>
       <description></description>
     </command>
-    <command name='getStatusHKP1?' protocmd='getaddr' >
-      <addr>7663</addr>
+    <command name='getDrehzahlHKP_A1' protocmd='getaddr' >
+      <addr>7664</addr>
       <len>1</len>
-      <unit></unit>
+      <unit>PR</unit>
+      <description>Drehzahl Heizkreispumpe A1</description>
+    </command>
+    <command name='getDrehzahlHKP_M2' protocmd='getaddr' >
+      <addr>7666</addr>
+      <len>1</len>
+      <unit>PR</unit>
+      <description>Drehzahl Heizkreispumpe M2</description>
+    </command>
+    <command name='getBetriebsart_M1' protocmd='getaddr' >
+      <addr>2323</addr>
+      <len>1</len>
+      <unit>E_BA4</unit>
       <description></description>
     </command>
-    <command name='getStatusHKP2?' protocmd='getaddr' >
-      <addr>7665</addr>
+    <command name='getBetriebsart_M2' protocmd='getaddr' >
+      <addr>3323</addr>
       <len>1</len>
-      <unit></unit>
+      <unit>E_BA4</unit>
       <description></description>
     </command>
   </commands>
