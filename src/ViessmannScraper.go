@@ -53,8 +53,37 @@ func Connect() bool {
   return client.connected
 }
 
-func Write(cmd string) bool {
-  return true
+func Write(cmd string) {
+  n, err := client.writer.WriteString(cmd + "\r\n")
+
+  if n > 0 {
+    fmt.Println("Wrote", n, "bytes.")
+  }
+
+  if err != nil {
+    fmt.Println(err)
+    client.connected = false
+  }
+
+  err = client.writer.Flush()
+
+  if err != nil {
+    fmt.Println(err)
+    client.connected = false
+  }
+}
+
+func Read() {
+  str, err := client.reader.ReadString('\n')
+
+  if len(str) > 0 {
+    fmt.Printf("Received %d bytes: %s", len(str), str)
+  }
+
+  if err != nil {
+    fmt.Println(err)
+    client.connected = false
+  }
 }
 
 func setup() {
@@ -78,17 +107,13 @@ func main() {
   flag.Parse()
   fmt.Println("ViessmannScraper")
 
-  setup()
-
   for {
-    fmt.Println("Reading...")
-    str, err := client.reader.ReadString('\n')
+    if !client.connected {
+      setup()
+    }
+    Write("device")
 
-    if len(str) > 0 {
-      fmt.Printf("Received %d bytes: %s", len(str), str)
-    }
-    if err != nil {
-      break
-    }
+    go Read()
+    time.Sleep(5 * time.Second)
   }
 }
