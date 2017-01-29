@@ -6,32 +6,55 @@ import (
   "bufio"
   "os"
   "flag"
+  "time"
 )
 
-func Connect(address string, port int) (bool, net.Conn) {
-  addressStr := fmt.Sprintf("%s:%d", address, port)
-  fmt.Println("Connecting to:", addressStr)
+const MAX_RECONNECT = 5
+const DIAL_TIMEOUT = 5 * time.Second
 
-  conn, err := net.Dial("tcp", addressStr)
+var address string
+var port int
+
+var connected bool = false
+var conn net.Conn
+
+func init() {
+  flag.StringVar(&address, "address", "raspberrypi-2", "The address of the vcontrold telnet server.")
+  flag.IntVar(&port, "port", 3002, "The port of the vcontrold telnet server.")
+}
+
+func Connect() bool {
+  if connected {
+    return true
+  }
+  addressStr := fmt.Sprintf("%s:%d", address, port)
+
+  connTmp, err := net.DialTimeout("tcp", addressStr, DIAL_TIMEOUT)
   
   if err != nil {
     fmt.Println(err)
-    return false, nil
+    connected = false
+    return false
   }
 
+  connected = true
+  conn = connTmp
   fmt.Println("Connected to:", conn.RemoteAddr())
-  return true, conn
+  return true
 }
 
 func main() {
-  fmt.Println("ViessmannScraper")
-  
-  addressPtr := flag.String("address", "raspberrypi-2", "The address of the vcontrold telnet server.")
-  portPtr := flag.Int("port", 3002, "The port of the vcontrold telnet server.")
-
   flag.Parse()
+  fmt.Println("ViessmannScraper")
 
-  connected, conn := Connect(*addressPtr, *portPtr)
+  for i := 0; i < MAX_RECONNECT; i++ {
+    fmt.Println("Attempt to connect", i+1, "of", MAX_RECONNECT, "tries.")
+    if Connect() {
+      break
+    }
+    time.Sleep(1 * time.Second)
+  }
+
   if !connected {
     os.Exit(1)
   }
