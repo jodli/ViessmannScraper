@@ -21,6 +21,7 @@ type Vclient struct {
   connection net.Conn
   reader *bufio.Reader
   writer *bufio.Writer
+  channel chan string
 }
 
 var client Vclient
@@ -54,6 +55,8 @@ func Connect() bool {
 }
 
 func Write(cmd string) {
+  fmt.Println("Writing:", cmd)
+
   n, err := client.writer.WriteString(cmd + "\r\n")
 
   if n > 0 {
@@ -74,16 +77,34 @@ func Write(cmd string) {
 }
 
 func Read() {
-  str, err := client.reader.ReadString('\n')
+  for {
+    str, err := client.reader.ReadString('\n')
 
-  if len(str) > 0 {
-    fmt.Printf("Received %d bytes: %s", len(str), str)
-  }
+    if len(str) > 0 {
+      //fmt.Println("Received bytes:", len(str))
+      client.channel <- str
+    }
 
-  if err != nil {
-    fmt.Println(err)
-    client.connected = false
+    if err != nil {
+      fmt.Println(err)
+      client.connected = false
+      break
+    }
   }
+  fmt.Println("Stopping read thread")
+}
+
+func Process() {
+  for {
+    str, ok := <- client.channel
+    if !ok {
+      fmt.Println("Channel closed")
+      break
+    }
+
+    fmt.Print("Processing: ", str)
+  }
+  fmt.Println("Stopping process thread")
 }
 
 func setup() {
@@ -92,6 +113,8 @@ func setup() {
     if Connect() {
       client.reader = bufio.NewReader(client.connection)
       client.writer = bufio.NewWriter(client.connection)
+
+      client.channel = make(chan string)
       break
     }
     time.Sleep(5 * time.Second)
@@ -110,10 +133,13 @@ func main() {
   for {
     if !client.connected {
       setup()
-    }
-    Write("device")
 
-    go Read()
+      // We suppose the read thread was broken so we start it again.
+      go Read()
+      go Process()
+    }
+    Write("getTempSpeicher")
+
     time.Sleep(5 * time.Second)
   }
 }
