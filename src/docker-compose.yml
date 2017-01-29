@@ -7,4 +7,4 @@ services:
     volumes:
       - .:/go/src/
     working_dir: /go/src/
-    command: go run ViessmannScraper.go
+    command: go run ViessmannScraper.go -address=raspberrypi-2 -port=3002

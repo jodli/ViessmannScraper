@@ -5,25 +5,33 @@ import (
   "net"
   "bufio"
   "os"
+  "flag"
 )
 
-func Connect() (bool, net.Conn) {
-  fmt.Println("Connecting...")
-  conn, err := net.Dial("tcp", "raspberrypi-2:3002")
+func Connect(address string, port int) (bool, net.Conn) {
+  addressStr := fmt.Sprintf("%s:%d", address, port)
+  fmt.Println("Connecting to:", addressStr)
+
+  conn, err := net.Dial("tcp", addressStr)
   
   if err != nil {
     fmt.Println(err)
     return false, nil
   }
-  fmt.Print("Connected to: ")
-  fmt.Println(conn.RemoteAddr())
+
+  fmt.Println("Connected to:", conn.RemoteAddr())
   return true, conn
 }
 
 func main() {
   fmt.Println("ViessmannScraper")
   
-  connected, conn := Connect()
+  addressPtr := flag.String("address", "raspberrypi-2", "The address of the vcontrold telnet server.")
+  portPtr := flag.Int("port", 3002, "The port of the vcontrold telnet server.")
+
+  flag.Parse()
+
+  connected, conn := Connect(*addressPtr, *portPtr)
   if !connected {
     os.Exit(1)
   }
