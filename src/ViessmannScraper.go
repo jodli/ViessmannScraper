@@ -7,17 +7,26 @@ import (
   "os"
 )
 
-
-
-func main() {
+func Connect() (bool, net.Conn) {
   fmt.Println("Connecting...")
   conn, err := net.Dial("tcp", "raspberrypi-2:3002")
   
   if err != nil {
     fmt.Println(err)
+    return false, nil
+  }
+  fmt.Print("Connected to: ")
+  fmt.Println(conn.RemoteAddr())
+  return true, conn
+}
+
+func main() {
+  fmt.Println("ViessmannScraper")
+  
+  connected, conn := Connect()
+  if !connected {
     os.Exit(1)
   }
-  fmt.Println("Connected")
 
   fmt.Println("Writing to server...")
   fmt.Fprintf(conn, "device\r\n")
