@@ -7,6 +7,8 @@ import (
   "os"
   "flag"
   "time"
+  "strings"
+  "strconv"
 )
 
 const MAX_RECONNECT = 5
@@ -77,11 +79,11 @@ func Write(cmd string) {
 }
 
 func Read() {
+  fmt.Println("Starting read thread")
   for {
     str, err := client.reader.ReadString('\n')
 
     if len(str) > 0 {
-      //fmt.Println("Received bytes:", len(str))
       client.channel <- str
     }
 
@@ -95,6 +97,7 @@ func Read() {
 }
 
 func Process() {
+  fmt.Println("Starting process thread")
   for {
     str, ok := <- client.channel
     if !ok {
@@ -103,6 +106,14 @@ func Process() {
     }
 
     fmt.Print("Processing: ", str)
+
+    value := strings.Split(strings.Replace(str, "vctrld>", "", 1), " ")[0]
+    f, err := strconv.ParseFloat(value, 32)
+    if err != nil {
+      fmt.Println(err)
+    } else {
+      fmt.Println(f)
+    }
   }
   fmt.Println("Stopping process thread")
 }
