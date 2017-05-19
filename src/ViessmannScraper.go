@@ -30,7 +30,7 @@ const (
   STATUS_SOLAR = "getStatusSolar"
   STATUS_PUMPE_SPEICHERLADE = "getStatusSpeicherlade"
   STATUS_PUMPE_HEIZKREIS_A1 = "getStatusHeizkreis_A1"
-  STATUS_PUMPE_HEIZKREIS_M1 = "getStatusHeizkreis_M1"
+  STATUS_PUMPE_HEIZKREIS_M2 = "getStatusHeizkreis_M2"
   STATUS_PUMPE_ZIRKULATION = "getStatusZirkulation"
   STATUS_RELAIS_K12 = "getStatusRelaisK12"
   STATUS_PUMPE_INTERN = "getStatusIntern"
@@ -163,20 +163,25 @@ func ParseValues(command string, values []string) {
     fmt.Println(value)
   }
 
-  if strings.Contains(command, "Temp") {
+  if strings.Contains(command, "Temp") ||
+     strings.Contains(command, "Stunden") ||
+     strings.Contains(command, "Starts") {
     floatValue, err := strconv.ParseFloat(values[0], 32)
     if err != nil {
       fmt.Println(err)
     } else {
       fmt.Println("============>", time.Now(), command, ":", floatValue)
     }
-  } else if strings.Contains(command, "Status") {
+  } else if strings.Contains(command, "Status") ||
+            strings.Contains(command, "Sammel") {
     boolValue, err := strconv.ParseBool(values[0])
     if err != nil {
       fmt.Println(err)
     } else {
       fmt.Println("============>", time.Now(), command, ":", boolValue)
     }
+  } else {
+    fmt.Println("Could not parse values.")
   }
 }
 
@@ -209,10 +214,10 @@ func main() {
                     TEMP_SOLAR_WW, TEMP_SPEICHER, TEMP_SOLL_WW, TEMP_AUSSEN_GEDAEMPFT,
                     TEMP_AUSSEN_GEMISCHT, TEMP_IST_KESSEL, TEMP_SOLL_KESSEL)
   commands = append(commands, STATUS_SOLAR, STATUS_PUMPE_SPEICHERLADE, STATUS_PUMPE_HEIZKREIS_A1,
-                    STATUS_PUMPE_HEIZKREIS_M1, STATUS_PUMPE_ZIRKULATION, STATUS_RELAIS_K12,
+                    STATUS_PUMPE_HEIZKREIS_M2, STATUS_PUMPE_ZIRKULATION, STATUS_RELAIS_K12,
                     STATUS_PUMPE_INTERN, STATUS_FLOW_SWITCH)
   commands = append(commands, MISC_STARTS_BRENNER, MISC_LAUFZEIT_BRENNER, MISC_LAUFZEIT_BRENNER_STUFE1,
-                    MISC_LAUFZEIT_BRENNER_STUFE2, MISC_SAMMELSTOERUNG, MISC_Stoerung0, MISC_TIME)
+                    MISC_LAUFZEIT_BRENNER_STUFE2, MISC_SAMMELSTOERUNG)
 
   for {
     if !client.connected {
