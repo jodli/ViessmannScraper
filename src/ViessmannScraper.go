@@ -36,10 +36,10 @@ const (
   STATUS_PUMPE_INTERN = "getStatusIntern"
   STATUS_FLOW_SWITCH = "getStatusFlowSwitch"
 
-  MISC_STARTS_BRENNER = "getBrennerstarts"
+  MISC_STARTS_BRENNER = "getStartsBrenner"
   MISC_LAUFZEIT_BRENNER = "getStundenBrenner"
-  MISC_LAUFZEIT_BRENNER_STUFE1 = "getBrennerStunden1"
-  MISC_LAUFZEIT_BRENNER_STUFE2 = "getBrennerStunden2"
+  MISC_LAUFZEIT_BRENNER_STUFE1 = "getStundenBrenner1"
+  MISC_LAUFZEIT_BRENNER_STUFE2 = "getStundenBrenner2"
   MISC_SAMMELSTOERUNG = "getSammelStoerung"
   MISC_Stoerung0 = "getStoerung0"
   MISC_TIME = "getTime"

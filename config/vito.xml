@@ -182,7 +182,7 @@
       <description>Position Mischer Ist</description>
     </command>
     <!--Brenner-->
-    <command name='getBrennerstarts' protocmd='getaddr' >
+    <command name='getStartsBrenner' protocmd='getaddr' >
       <addr>088A</addr>
       <len>4</len>
       <unit>CO</unit>
@@ -194,13 +194,13 @@
       <unit>HS</unit>
       <description>Betriebsstunden Brenner</description>
     </command>
-    <command name='getBrennerStunden1' protocmd='getaddr' >
+    <command name='getStundenBrenner1' protocmd='getaddr' >
       <addr>08A7</addr>
       <len>4</len>
       <unit>HS</unit>
       <description>Betriebsstunden Brenner Stufe 1</description>
     </command>
-    <command name='getBrennerStunden2' protocmd='getaddr' >
+    <command name='getStundenBrenner2' protocmd='getaddr' >
       <addr>08AB</addr>
       <len>4</len>
       <unit>HS</unit>
