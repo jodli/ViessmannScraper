@@ -13,6 +13,37 @@ import (
 
 const MAX_RECONNECT = 5
 const DIAL_TIMEOUT = 5 * time.Second
+const POLLING_RATE = 30 * time.Second
+
+const (
+  TEMP_RUECKLAUF = "getTempRuecklauf"
+  TEMP_ABGAS = "getTempAbgas"
+  TEMP_SOLAR_DACH = "getTempSolarDach"
+  TEMP_SOLAR_WW = "getTempSolarWW"
+  TEMP_SPEICHER = "getTempSpeicher"
+  TEMP_SOLL_WW = "getTempSollWW"
+  TEMP_AUSSEN_GEDAEMPFT = "getTempAussenGedaempft"
+  TEMP_AUSSEN_GEMISCHT = "getTempAussenGemischt"
+  TEMP_IST_KESSEL = "getTempIstKessel"
+  TEMP_SOLL_KESSEL = "getTempSollKessel"
+
+  STATUS_SOLAR = "getStatusSolar"
+  STATUS_PUMPE_SPEICHERLADE = "getStatusSpeicherlade"
+  STATUS_PUMPE_HEIZKREIS_A1 = "getStatusHeizkreis_A1"
+  STATUS_PUMPE_HEIZKREIS_M1 = "getStatusHeizkreis_M1"
+  STATUS_PUMPE_ZIRKULATION = "getStatusZirkulation"
+  STATUS_RELAIS_K12 = "getStatusRelaisK12"
+  STATUS_PUMPE_INTERN = "getStatusIntern"
+  STATUS_FLOW_SWITCH = "getStatusFlowSwitch"
+
+  MISC_STARTS_BRENNER = "getBrennerstarts"
+  MISC_LAUFZEIT_BRENNER = "getStundenBrenner"
+  MISC_LAUFZEIT_BRENNER_STUFE1 = "getBrennerStunden1"
+  MISC_LAUFZEIT_BRENNER_STUFE2 = "getBrennerStunden2"
+  MISC_SAMMELSTOERUNG = "getSammelStoerung"
+  MISC_Stoerung0 = "getStoerung0"
+  MISC_TIME = "getTime"
+)
 
 var address string
 var port int
@@ -84,6 +115,7 @@ func Read() {
     str, err := client.reader.ReadString('\n')
 
     if len(str) > 0 {
+      fmt.Print("Read:", str)
       client.channel <- str
     }
 
@@ -96,26 +128,56 @@ func Read() {
   fmt.Println("Stopping read thread")
 }
 
-func Process() {
+func Process(commands []string) {
   fmt.Println("Starting process thread")
   for {
-    str, ok := <- client.channel
-    if !ok {
-      fmt.Println("Channel closed")
-      break
+    fmt.Println("Starting new process cycle")
+
+    for _, command := range commands {
+      Write(command)
+
+      str, ok := <- client.channel
+      if !ok {
+        fmt.Println("Channel closed")
+        break
+      }
+
+      fmt.Print("Processing: ", str)
+
+      str = strings.Replace(str, "vctrld>", "", -1)
+      str = strings.Replace(str, "\n", "", -1)
+      values := strings.SplitN(str, " ", 2)
+      ParseValues(command, values)
     }
 
-    fmt.Print("Processing: ", str)
+    fmt.Println("Sleeping for", POLLING_RATE)
+    time.Sleep(POLLING_RATE)
+  }
+  fmt.Println("Stopping process thread")
+}
 
-    value := strings.Split(strings.Replace(str, "vctrld>", "", 1), " ")[0]
-    f, err := strconv.ParseFloat(value, 32)
+func ParseValues(command string, values []string) {
+  fmt.Println("Parsing command:", command)
+  fmt.Println("with values:")
+  for _, value := range values {
+    fmt.Println(value)
+  }
+
+  if strings.Contains(command, "Temp") {
+    floatValue, err := strconv.ParseFloat(values[0], 32)
     if err != nil {
       fmt.Println(err)
     } else {
-      fmt.Println(f)
+      fmt.Println("============>", time.Now(), command, ":", floatValue)
+    }
+  } else if strings.Contains(command, "Status") {
+    boolValue, err := strconv.ParseBool(values[0])
+    if err != nil {
+      fmt.Println(err)
+    } else {
+      fmt.Println("============>", time.Now(), command, ":", boolValue)
     }
   }
-  fmt.Println("Stopping process thread")
 }
 
 func setup() {
@@ -133,13 +195,17 @@ func setup() {
 
   if !client.connected {
     // If we are still not connected at this point we exit and eventually restart the container.
+    fmt.Println("Could not connect to vcontrold server. Exiting...")
     os.Exit(1)
   }
 }
 
 func main() {
   flag.Parse()
-  fmt.Println("ViessmannScraper")
+  fmt.Println("======== ViessmannScraper ========")
+
+  var commands []string
+  commands = append(commands, TEMP_SPEICHER, STATUS_SOLAR, TEMP_RUECKLAUF)
 
   for {
     if !client.connected {
@@ -147,10 +213,8 @@ func main() {
 
       // We suppose the read thread was broken so we start it again.
       go Read()
-      go Process()
+      go Process(commands)
     }
-    Write("getTempSpeicher")
-
-    time.Sleep(5 * time.Second)
+    time.Sleep(10 * time.Second)
   }
 }
