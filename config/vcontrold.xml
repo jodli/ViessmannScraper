@@ -135,8 +135,8 @@
     <unit name='Status' >
       <abbrev>E_ST</abbrev>
       <type>enum</type>
-      <enum bytes='00' text='AUS'/>
-      <enum bytes='01' text='EIN'/>
+      <enum bytes='00' text='True'/>
+      <enum bytes='01' text='False'/>
       <enum text='UNKNOWN'/>
     </unit>
     <unit name='StatusUmschaltVentil' >
