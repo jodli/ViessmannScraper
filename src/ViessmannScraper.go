@@ -205,7 +205,14 @@ func main() {
   fmt.Println("======== ViessmannScraper ========")
 
   var commands []string
-  commands = append(commands, TEMP_SPEICHER, STATUS_SOLAR, TEMP_RUECKLAUF)
+  commands = append(commands, TEMP_RUECKLAUF, TEMP_ABGAS, TEMP_SOLAR_DACH,
+                    TEMP_SOLAR_WW, TEMP_SPEICHER, TEMP_SOLL_WW, TEMP_AUSSEN_GEDAEMPFT,
+                    TEMP_AUSSEN_GEMISCHT, TEMP_IST_KESSEL, TEMP_SOLL_KESSEL)
+  commands = append(commands, STATUS_SOLAR, STATUS_PUMPE_SPEICHERLADE, STATUS_PUMPE_HEIZKREIS_A1,
+                    STATUS_PUMPE_HEIZKREIS_M1, STATUS_PUMPE_ZIRKULATION, STATUS_RELAIS_K12,
+                    STATUS_PUMPE_INTERN, STATUS_FLOW_SWITCH)
+  commands = append(commands, MISC_STARTS_BRENNER, MISC_LAUFZEIT_BRENNER, MISC_LAUFZEIT_BRENNER_STUFE1,
+                    MISC_LAUFZEIT_BRENNER_STUFE2, MISC_SAMMELSTOERUNG, MISC_Stoerung0, MISC_TIME)
 
   for {
     if !client.connected {
