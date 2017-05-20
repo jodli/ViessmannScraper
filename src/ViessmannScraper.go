@@ -5,10 +5,15 @@ import (
   "net"
   "bufio"
   "os"
+  "log"
+  "io"
+  //"io/ioutil"
   "flag"
   "time"
   "strings"
   "strconv"
+
+  "github.com/influxdata/influxdb/client/v2"
 )
 
 const MAX_RECONNECT = 5
@@ -45,6 +50,12 @@ const (
   MISC_TIME = "getTime"
 )
 
+var (
+  Trace *log.Logger
+  Info *log.Logger
+  Error *log.Logger
+)
+
 var address string
 var port int
 
@@ -57,92 +68,108 @@ type Vclient struct {
   channel chan string
 }
 
-var client Vclient
+var viessmann Vclient
+var influx client.Client
 
-func init() {
+func Init(traceHandle io.Writer, infoHandle io.Writer, errorHandle io.Writer) {
   flag.StringVar(&address, "address", "raspberrypi-2", "The address of the vcontrold telnet server.")
   flag.IntVar(&port, "port", 3002, "The port of the vcontrold telnet server.")
 
-  client = Vclient{connected: false}
+  Trace = log.New(traceHandle, "TRACE: ", log.Ldate|log.Ltime|log.Lshortfile)
+  Info = log.New(infoHandle, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+  Error = log.New(errorHandle, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+
+  viessmann = Vclient{connected: false}
+
+  var err error
+  influx, err = client.NewHTTPClient(client.HTTPConfig {
+    Addr: os.Getenv("INFLUX_URL"),
+    Username: os.Getenv("INFLUX_USER"),
+    Password: os.Getenv("INFLUX_PASS"),
+  })
+
+  if err != nil {
+    Error.Println(err)
+  }
 }
 
 func Connect() bool {
-  if client.connected {
-    return client.connected
+  if viessmann.connected {
+    return viessmann.connected
   }
 
   addressStr := fmt.Sprintf("%s:%d", address, port)
   connTmp, err := net.DialTimeout("tcp", addressStr, DIAL_TIMEOUT)
-  
+
   if err != nil {
-    fmt.Println(err)
-    client.connected = false
-    return client.connected
+    Error.Println(err)
+    viessmann.connected = false
+    return viessmann.connected
   }
 
-  client.connected = true
-  client.connection = connTmp
-  fmt.Println("Connected to:", connTmp.RemoteAddr())
+  viessmann.connected = true
+  viessmann.connection = connTmp
+  Info.Println("Connected to:", connTmp.RemoteAddr())
 
-  return client.connected
+  return viessmann.connected
 }
 
 func Write(cmd string) {
-  fmt.Println("Writing:", cmd)
+  Trace.Println("Writing:", cmd)
 
-  n, err := client.writer.WriteString(cmd + "\r\n")
+  n, err := viessmann.writer.WriteString(cmd + "\r\n")
 
   if n > 0 {
-    fmt.Println("Wrote", n, "bytes.")
+    Trace.Println("Wrote", n, "bytes.")
   }
 
   if err != nil {
-    fmt.Println(err)
-    client.connected = false
+    Error.Println(err)
+    viessmann.connected = false
   }
 
-  err = client.writer.Flush()
+  err = viessmann.writer.Flush()
 
   if err != nil {
-    fmt.Println(err)
-    client.connected = false
+    Error.Println(err)
+    viessmann.connected = false
   }
 }
 
 func Read() {
-  fmt.Println("Starting read thread")
+  Trace.Println("Starting read thread")
   for {
-    str, err := client.reader.ReadString('\n')
+    str, err := viessmann.reader.ReadString('\n')
 
     if len(str) > 0 {
-      fmt.Print("Read:", str)
-      client.channel <- str
+      Trace.Print("Read:", str)
+      viessmann.channel <- str
     }
 
     if err != nil {
-      fmt.Println(err)
-      client.connected = false
+      Error.Println(err)
+      viessmann.connected = false
       break
     }
   }
-  fmt.Println("Stopping read thread")
+  Trace.Println("Stopping read thread")
 }
 
 func Process(commands []string) {
-  fmt.Println("Starting process thread")
+  Trace.Println("Starting process thread")
   for {
-    fmt.Println("Starting new process cycle")
+    Info.Println("Starting new process cycle...")
 
     for _, command := range commands {
       Write(command)
 
-      str, ok := <- client.channel
+      str, ok := <- viessmann.channel
       if !ok {
-        fmt.Println("Channel closed")
+        Trace.Println("Channel closed")
         break
       }
 
-      fmt.Print("Processing: ", str)
+      Trace.Print("Processing: ", str)
 
       str = strings.Replace(str, "vctrld>", "", -1)
       str = strings.Replace(str, "\n", "", -1)
@@ -150,17 +177,17 @@ func Process(commands []string) {
       ParseValues(command, values)
     }
 
-    fmt.Println("Sleeping for", POLLING_RATE)
+    Info.Println("Sleeping for", POLLING_RATE)
     time.Sleep(POLLING_RATE)
   }
-  fmt.Println("Stopping process thread")
+  Trace.Println("Stopping process thread")
 }
 
 func ParseValues(command string, values []string) {
-  fmt.Println("Parsing command:", command)
-  fmt.Println("with values:")
+  Trace.Println("Parsing command:", command)
+  Trace.Println("with values:")
   for _, value := range values {
-    fmt.Println(value)
+    Trace.Println(value)
   }
 
   if strings.Contains(command, "Temp") ||
@@ -168,46 +195,50 @@ func ParseValues(command string, values []string) {
      strings.Contains(command, "Starts") {
     floatValue, err := strconv.ParseFloat(values[0], 32)
     if err != nil {
-      fmt.Println(err)
+      Error.Println(err)
     } else {
-      fmt.Println("============>", time.Now(), command, ":", floatValue)
+      Info.Println(command, ":", floatValue)
     }
   } else if strings.Contains(command, "Status") ||
             strings.Contains(command, "Sammel") {
     boolValue, err := strconv.ParseBool(values[0])
     if err != nil {
-      fmt.Println(err)
+      Error.Println(err)
     } else {
-      fmt.Println("============>", time.Now(), command, ":", boolValue)
+      Info.Println(command, ":", boolValue)
     }
+  } else if strings.Contains(command, "Err:") {
+    Error.Println("Error occured:", values[1])
   } else {
-    fmt.Println("Could not parse values.")
+    Error.Println("Could not parse values.")
   }
 }
 
 func setup() {
   for i := 0; i < MAX_RECONNECT; i++ {
-    fmt.Println("Attempt to connect", i+1, "of", MAX_RECONNECT, "tries.")
+    Info.Println("Attempt to connect", i+1, "of", MAX_RECONNECT, "tries.")
     if Connect() {
-      client.reader = bufio.NewReader(client.connection)
-      client.writer = bufio.NewWriter(client.connection)
+      viessmann.reader = bufio.NewReader(viessmann.connection)
+      viessmann.writer = bufio.NewWriter(viessmann.connection)
 
-      client.channel = make(chan string)
+      viessmann.channel = make(chan string)
       break
     }
     time.Sleep(5 * time.Second)
   }
 
-  if !client.connected {
+  if !viessmann.connected {
     // If we are still not connected at this point we exit and eventually restart the container.
-    fmt.Println("Could not connect to vcontrold server. Exiting...")
+    Error.Println("Could not connect to vcontrold server. Exiting...")
     os.Exit(1)
   }
 }
 
 func main() {
+  Init(os.Stdout, os.Stdout, os.Stderr)
+
   flag.Parse()
-  fmt.Println("======== ViessmannScraper ========")
+  Info.Println("======== ViessmannScraper ========")
 
   var commands []string
   commands = append(commands, TEMP_RUECKLAUF, TEMP_ABGAS, TEMP_SOLAR_DACH,
@@ -220,7 +251,7 @@ func main() {
                     MISC_LAUFZEIT_BRENNER_STUFE2, MISC_SAMMELSTOERUNG)
 
   for {
-    if !client.connected {
+    if !viessmann.connected {
       setup()
 
       // We suppose the read thread was broken so we start it again.
