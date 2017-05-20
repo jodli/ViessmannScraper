@@ -19,6 +19,7 @@ import (
 const MAX_RECONNECT = 5
 const DIAL_TIMEOUT = 5 * time.Second
 const POLLING_RATE = 60 * time.Second
+const MAX_FLOAT = 128.5
 
 const (
   TEMP_RUECKLAUF = "getTempRuecklauf"
@@ -216,6 +217,9 @@ func ParseValues(command string, values []string) *client.Point {
     floatValue, err := strconv.ParseFloat(values[0], 32)
     if err != nil {
       Error.Println(err)
+      return nil
+    } else if floatValue == MAX_FLOAT {
+      Error.Println("Discarded faulty float value (", floatValue, ") for", command)
       return nil
     } else {
       Info.Println(command, ":", floatValue)
