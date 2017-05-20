@@ -9,6 +9,6 @@ services:
     working_dir: /go/src/
     command: go run ViessmannScraper.go -address=raspberrypi-2 -port=3002
     environment:
-      INFLUX_URL: http://localhost:8086
+      INFLUX_URL: http://snes:8086
       INFLUX_USER: root
       INFLUX_PASS: root

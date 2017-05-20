@@ -18,7 +18,7 @@ import (
 
 const MAX_RECONNECT = 5
 const DIAL_TIMEOUT = 5 * time.Second
-const POLLING_RATE = 30 * time.Second
+const POLLING_RATE = 60 * time.Second
 
 const (
   TEMP_RUECKLAUF = "getTempRuecklauf"
@@ -89,7 +89,8 @@ func Init(traceHandle io.Writer, infoHandle io.Writer, errorHandle io.Writer) {
   })
 
   if err != nil {
-    Error.Println(err)
+    Error.Println("Could not connect to InfluxDB:", err)
+    os.Exit(1)
   }
 }
 
@@ -159,6 +160,10 @@ func Process(commands []string) {
   Trace.Println("Starting process thread")
   for {
     Info.Println("Starting new process cycle...")
+    bp, _ := client.NewBatchPoints(client.BatchPointsConfig {
+      Database: "telegraf",
+      Precision: "s",
+    })
 
     for _, command := range commands {
       Write(command)
@@ -174,7 +179,19 @@ func Process(commands []string) {
       str = strings.Replace(str, "vctrld>", "", -1)
       str = strings.Replace(str, "\n", "", -1)
       values := strings.SplitN(str, " ", 2)
-      ParseValues(command, values)
+      point := ParseValues(command, values)
+
+      if point != nil {
+        Trace.Println("Adding point to batch.")
+        bp.AddPoint(point)
+        Trace.Println("Now contains", len(bp.Points()), "points.")
+      }
+    }
+
+    Info.Println("Writing", len(bp.Points()) , "points to InfluxDB.")
+    err := influx.Write(bp)
+    if err != nil {
+      Error.Println("Error writing to InfluxDB:", err)
     }
 
     Info.Println("Sleeping for", POLLING_RATE)
@@ -183,12 +200,15 @@ func Process(commands []string) {
   Trace.Println("Stopping process thread")
 }
 
-func ParseValues(command string, values []string) {
+func ParseValues(command string, values []string) *client.Point {
   Trace.Println("Parsing command:", command)
   Trace.Println("with values:")
   for _, value := range values {
     Trace.Println(value)
   }
+
+  tags := map[string]string { }
+  var fields map[string]interface{}
 
   if strings.Contains(command, "Temp") ||
      strings.Contains(command, "Stunden") ||
@@ -196,22 +216,36 @@ func ParseValues(command string, values []string) {
     floatValue, err := strconv.ParseFloat(values[0], 32)
     if err != nil {
       Error.Println(err)
+      return nil
     } else {
       Info.Println(command, ":", floatValue)
+      fields = map[string]interface{} { strings.TrimPrefix(command, "get"): floatValue }
     }
   } else if strings.Contains(command, "Status") ||
             strings.Contains(command, "Sammel") {
     boolValue, err := strconv.ParseBool(values[0])
     if err != nil {
       Error.Println(err)
+      return nil
     } else {
       Info.Println(command, ":", boolValue)
+      fields = map[string]interface{} { strings.TrimPrefix(command, "get"): boolValue }
     }
   } else if strings.Contains(command, "Err:") {
     Error.Println("Error occured:", values[1])
+    return nil
   } else {
     Error.Println("Could not parse values.")
+    return nil
   }
+
+  pt, err := client.NewPoint("viessmann", tags, fields, time.Now())
+  if err != nil {
+    Error.Println("Could not create point: ", err)
+    return nil
+  }
+  Info.Println("Point created: ", pt.String())
+  return pt
 }
 
 func setup() {
