@@ -7,7 +7,7 @@ import (
   "os"
   "log"
   "io"
-  //"io/ioutil"
+  "io/ioutil"
   "flag"
   "time"
   "strings"
@@ -273,7 +273,7 @@ func setup() {
 }
 
 func main() {
-  Init(os.Stdout, os.Stdout, os.Stderr)
+  Init(ioutil.Discard, os.Stdout, os.Stderr)
 
   flag.Parse()
   Info.Println("======== ViessmannScraper ========")
