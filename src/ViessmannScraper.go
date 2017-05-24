@@ -18,6 +18,8 @@ import (
 
 const MAX_RECONNECT = 5
 const DIAL_TIMEOUT = 5 * time.Second
+const READ_TIMEOUT = 2 * time.Minute
+const WRITE_TIMEOUT = 30 * time.Second
 const POLLING_RATE = 60 * time.Second
 const MAX_FLOAT = 128.5
 
@@ -117,6 +119,11 @@ func Connect() bool {
 }
 
 func Write(cmd string) {
+  var deadline = time.Now().Add(WRITE_TIMEOUT)
+  Trace.Println("Setting write deadline to:", deadline)
+
+  viessmann.connection.SetWriteDeadline(deadline)
+
   Trace.Println("Writing:", cmd)
 
   n, err := viessmann.writer.WriteString(cmd + "\r\n")
@@ -141,17 +148,22 @@ func Write(cmd string) {
 func Read() {
   Trace.Println("Starting read thread")
   for {
-    str, err := viessmann.reader.ReadString('\n')
+    var deadline = time.Now().Add(READ_TIMEOUT)
+    Trace.Println("Setting read deadline to:", deadline)
 
-    if len(str) > 0 {
-      Trace.Print("Read:", str)
-      viessmann.channel <- str
-    }
+    viessmann.connection.SetReadDeadline(deadline)
+
+    str, err := viessmann.reader.ReadString('\n')
 
     if err != nil {
       Error.Println(err)
       viessmann.connected = false
       break
+    }
+
+    if len(str) > 0 {
+      Trace.Print("Read:", str)
+      viessmann.channel <- str
     }
   }
   Trace.Println("Stopping read thread")
